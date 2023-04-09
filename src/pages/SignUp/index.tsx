@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { FormEvent, ChangeEvent } from 'react';
 
@@ -14,6 +14,13 @@ export default function SignUp() {
   const [name, setName] = useState('');
   const [disabled, setDisabled] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      navigate('/feed');
+    }
+  }, [navigate]);
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const input = event.target.value;
