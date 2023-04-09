@@ -1,5 +1,5 @@
 # CodeLeap - Engineering Test 🤖
-This project was developed for the Front-end Developer test for CodeLeap.
+This project was developed for the Front-end Developer test for CodeLeap. It was made entirely with front-end technologies, without the use of a database.
 
 ## Vite 🔽
 
@@ -36,6 +36,8 @@ yarn preview
 ```bash
 npm run preview
 ```
+
+##
 
 ### Project URL
 
