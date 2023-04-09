@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "start": "node dist/assets/index-b853bb6a.js",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
