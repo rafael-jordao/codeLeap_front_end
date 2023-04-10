@@ -3,16 +3,19 @@ import EditIcon from '../../assets/edit.svg';
 
 import { PostContainer, Header, Content, ContentHeader, Icon, Name, CreatedAt, Paragraph } from './styles';
 
+import { formatDistanceToNow } from 'date-fns';
+
 interface PostProps {
   title: string;
   name: string | null;
-  createdAt: string;
-  paragraph: string
+  created_datetime: Date;
+  content: string
   onDelete: () => void;
   onUpdate: () => void;
 }
 
-export default function Post({ title, name, createdAt, paragraph, onDelete, onUpdate }: PostProps) {
+export default function Post({ title, name, created_datetime, content, onDelete, onUpdate }: PostProps) {
+
   return (
     <PostContainer>
       <Header>
@@ -30,11 +33,11 @@ export default function Post({ title, name, createdAt, paragraph, onDelete, onUp
       <Content>
         <ContentHeader>
           <Name>{name}</Name>
-          <CreatedAt>{createdAt}</CreatedAt>
+          <CreatedAt>{formatDistanceToNow(new Date(created_datetime))} ago</CreatedAt>
         </ContentHeader>
 
         <Paragraph>
-          {paragraph}
+          {content}
         </Paragraph>
       </Content>
     </PostContainer>

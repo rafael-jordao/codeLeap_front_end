@@ -1,6 +1,5 @@
 # CodeLeap - Engineering Test 🤖
-This project was developed for the Front-end Developer test for CodeLeap. It was made entirely with front-end technologies, without the use of a database.
-
+This project was developed for the Front-end Developer test for CodeLeap.
 ## Vite 🔽
 
 I decided to use Vite to develop this project because I didn't find it necessary to use any additional framework due to the simplicity of the project.

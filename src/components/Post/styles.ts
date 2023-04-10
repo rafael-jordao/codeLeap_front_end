@@ -32,6 +32,11 @@ export const Icon = styled.button`
   border: none;
   cursor: pointer;
   margin-left: 1rem;
+  transition: .2s ease-in-out;
+
+  &:hover {
+    opacity: .6;
+  }
 `;
 
 export const Content = styled.div`

@@ -1,59 +1,48 @@
-import { formatDistanceToNow } from 'date-fns';
-import { v4 as uuidv4 } from 'uuid';
-
 import { PostProps } from '../@types/PostProps';
+
+import { POSTS_GET, POSTS_POST, POST_DELETE, POST_PATCH } from '../api';
 
 class PostUseCases {
 
-  create({ title, name, paragraph }: Omit<PostProps, 'createdAt'>) {
-    const createdAt = new Date();
-    const formattedDate = formatDistanceToNow(createdAt, { addSuffix: true });
+  async index() {
+    const { url, options } = POSTS_GET();
+    const response = await fetch(url, options);
+    const json = await response.json();
+    return json;
+  }
 
+  async create({ username, title, content }: PostProps) {
     const newPost = {
-      id: uuidv4(),
+      username,
       title,
-      name,
-      createdAt: formattedDate,
-      paragraph,
+      content,
     };
 
-    if (name.length > 0 && title.length > 0) {
-      return newPost;
-    }
-    return;
+    const { url, options } = POSTS_POST(newPost);
+
+    const response = await fetch(url, options);
+    const json = await response.json();
+    return json;
   }
 
-  delete(id: string, feed: PostProps[]) {
-    const index = feed.findIndex(post => post.id === id);
+  async delete(id: number) {
+    const { url, options } = POST_DELETE(id);
+    const response = await fetch(url, options);
 
-    if (index >= 0) {
-      const updatedFeed = [...feed];
-      updatedFeed.splice(index, 1);
-      return updatedFeed;
-    }
-
-    return feed;
+    return response.status;
   }
 
-  edit(id: string, { title, name, paragraph }: Omit<PostProps, 'createdAt'>, feed: PostProps[]): PostProps[] {
+  async edit(id: number, { title, content }: PostProps) {
+    const editedPost = {
+      title,
+      content,
+    };
 
-    const index = feed.findIndex(post => post.id === id);
+    const { url, options } = POST_PATCH(id, editedPost);
 
-    if (index >= 0) {
-      const updatedPost = {
-        ...feed[index],
-        title,
-        name,
-        paragraph,
-      };
-
-      const updatedFeed = [...feed];
-      updatedFeed[index] = updatedPost;
-
-      return updatedFeed;
-    }
-
-    return feed;
+    const response = await fetch(url, options);
+    const json = await response.json();
+    return json;
   }
 }
 

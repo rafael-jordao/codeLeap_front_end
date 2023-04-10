@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import { Container, Header, FormContainer, Form } from './styles';
 
@@ -8,21 +8,21 @@ import { Button } from '../../components/Button';
 import Post from '../../components/Post';
 import DeleteModal from '../../components/DeleteModal';
 import EditModal from '../../components/EditModal';
+import Loading from '../../components/Loading';
 
 import PostUseCases from '../../actions/PostUseCases';
 import { PostProps } from '../../@types/PostProps';
 
-
 export default function Main() {
   const [title, setTitle] = useState('');
-  const [paragraph, setParagraph] = useState('');
+  const [content, setContent] = useState('');
 
   const [disabled, setDisabled] = useState(true);
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isUpdateModaelVisible, setIsUpdateModalVisible] = useState(false);
 
-  const [selectedPostId, setSelectedPostId] = useState<string>('');
+  const [selectedPostId, setSelectedPostId] = useState<number>();
 
   const [feed, setFeed] = useState<PostProps[]>([]);
 
@@ -30,54 +30,67 @@ export default function Main() {
 
   const [newParagraph, setNewParagraph] = useState('');
 
-  const name = localStorage.getItem('user') || '';
+  const [loading, setLoading] = useState(true);
 
-  function openDeleteModal(id: string) {
+  const username = localStorage.getItem('user') || '';
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  function handleScroll() {
+    if (
+      window.innerHeight + document.documentElement.scrollTop ===
+      document.documentElement.offsetHeight
+    ) {
+      // load more content
+    }
+  }
+
+  useEffect(() => {
+    async function listAllPosts() {
+      const data = await PostUseCases.index();
+      setFeed(data.results);
+      setLoading(false);
+    }
+
+    listAllPosts();
+  }, [PostUseCases.index()]);
+
+  function openDeleteModal(id: number) {
     setSelectedPostId(id);
     setIsDeleteModalVisible(true);
   }
 
-  function openUpdateModal(id: string) {
+  function openUpdateModal(id: number) {
     setSelectedPostId(id);
     setIsUpdateModalVisible(true);
   }
 
-  function createPost(e: FormEvent<HTMLFormElement>) {
+  async function createPost(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const newPost = PostUseCases.create({ title, name, paragraph });
 
-    if (newPost) {
-      setFeed([...feed, newPost]);
-      setParagraph('');
-      setTitle('');
-      setDisabled(false);
-    }
-    return;
+    const newPost = await PostUseCases.create({ username, title, content });
+
+    setFeed([...feed, newPost]);
+    setContent('');
+    setTitle('');
+    setDisabled(false);
   }
 
-  function deletePost(id: string) {
-
-    if (!id) {
-      return;
-    }
-    const updatedFeed = PostUseCases.delete(id, feed);
-
-    if (updatedFeed !== feed) {
-      setFeed(updatedFeed);
-    }
-
+  async function deletePost(id: number) {
+    await PostUseCases.delete(id);
     setIsDeleteModalVisible(false);
   }
 
-
-  function editPost(id: string, newTitle: string, newParagraph: string) {
-    const updatePost = PostUseCases.edit(id, {
+  async function editPost(id: number, newTitle: string, newContent: string) {
+    await PostUseCases.edit(id, {
+      username: username,
       title: newTitle,
-      name: name,
-      paragraph: newParagraph
-    }, feed);
+      content: newContent,
+    });
 
-    setFeed(updatePost);
     setIsUpdateModalVisible(false);
 
     setNewTitle('');
@@ -105,43 +118,55 @@ export default function Main() {
             label="Content"
             name="content"
             onChange={({ target }) => {
-              setParagraph(target.value);
+              setContent(target.value);
               if (target.value.length > 0) {
                 setDisabled(false);
               } else {
                 setDisabled(true);
               }
             }}
-            value={paragraph}
+            value={content}
             placeholder='Content here' />
           <Button disabled={disabled}>CREATE</Button>
         </Form>
       </FormContainer>
 
-      {feed.slice().reverse().map((post) => {
-        return (
-          <Post
-            key={post.id}
-            title={post.title}
-            name={post.name}
-            paragraph={post.paragraph}
-            createdAt={post.createdAt}
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            onDelete={() => openDeleteModal(post.id!)}
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            onUpdate={() => openUpdateModal(post.id!)}
-          />
-        );
-      })}
+      {loading ? (
+        <Loading />
+      ) : (
+        feed.map((post) => {
+          return (
+            <Post
+              key={post.id}
+              title={post.title}
+              name={post.username}
+              content={post.content}
+              created_datetime={post.created_datetime ?? new Date()}
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              onDelete={() => openDeleteModal(post.id!)}
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              onUpdate={() => openUpdateModal(post.id!)}
+            />
+          );
+        })
+      )}
 
       <DeleteModal
-        onConfirm={() => deletePost(selectedPostId)}
+        onConfirm={() => {
+          if (selectedPostId != undefined) {
+            deletePost(selectedPostId);
+          }
+        }}
         visible={isDeleteModalVisible}
         onCancel={() => setIsDeleteModalVisible(false)}
       />
 
       <EditModal
-        onConfirm={() => editPost(selectedPostId, newTitle, newParagraph)}
+        onConfirm={() => {
+          if (selectedPostId != undefined) {
+            editPost(selectedPostId, newTitle, newParagraph);
+          }
+        }}
         visible={isUpdateModaelVisible}
         onCancel={() => setIsUpdateModalVisible(false)}
         onChangeTitle={({ target }) => setNewTitle(target.value)}
@@ -151,5 +176,4 @@ export default function Main() {
       />
     </Container>
   );
-
 }
