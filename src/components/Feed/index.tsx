@@ -21,17 +21,53 @@ export default function Feed() {
 
   const [loading, setLoading] = useState(true);
 
+  const [limit, setLimit] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
   const username = localStorage.getItem('user') || '';
 
   useEffect(() => {
-    async function listAllPosts() {
-      const data = await PostUseCases.index();
-      setFeed(data.results);
-      setLoading(false);
-    }
+    let wait = false;
 
+    const infiniteScroll = () => {
+      if (hasMore) {
+        const scroll = window.scrollY;
+        const height = document.body.offsetHeight - window.innerHeight;
+
+        if (scroll > height * .75 && !wait) {
+          setLimit((prevLimit) => prevLimit + 10);
+
+          wait = true;
+          setTimeout(() => {
+            wait = false;
+          }, 1000);
+        }
+      }
+    };
+
+    window.addEventListener('wheel', infiniteScroll);
+    window.addEventListener('scroll', infiniteScroll);
+
+    return () => {
+      window.removeEventListener('wheel', infiniteScroll);
+      window.removeEventListener('scroll', infiniteScroll);
+    };
+
+  }, [hasMore]);
+
+  useEffect(() => {
     listAllPosts();
-  }, [PostUseCases.index()]);
+  }, [limit]);
+
+  async function listAllPosts() {
+    const data = await PostUseCases.index(limit);
+    setFeed(data.results);
+    setLoading(false);
+
+    if (data.results.length < limit) {
+      setHasMore(false);
+    }
+  }
 
   function openDeleteModal(id: number) {
     setSelectedPostId(id);

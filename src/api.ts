@@ -1,8 +1,9 @@
 const url = 'https://dev.codeleap.co.uk';
 
-export function POSTS_GET() {
+
+export function POSTS_GET(limit: number) {
   return {
-    url: url + '/careers/',
+    url: url + `/careers/?limit=${limit}&offset=0`,
     options: {
       method: 'GET',
     },

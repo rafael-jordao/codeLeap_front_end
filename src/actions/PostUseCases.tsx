@@ -2,12 +2,14 @@ import { PostProps } from '../@types/PostProps';
 
 import { POSTS_GET, POSTS_POST, POST_DELETE, POST_PATCH } from '../api';
 
+
 class PostUseCases {
 
-  async index() {
-    const { url, options } = POSTS_GET();
+  async index(limit: number) {
+    const { url, options } = POSTS_GET(limit);
     const response = await fetch(url, options);
     const json = await response.json();
+
     return json;
   }
 
