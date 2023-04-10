@@ -1,7 +1,8 @@
 export interface PostProps {
-  id?: string;
+  id?: number;
+  username: string;
+  created_datetime?: Date;
   title: string;
-  name: string;
-  createdAt: string;
-  paragraph: string;
+  content: string;
 }
+
